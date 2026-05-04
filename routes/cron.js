@@ -10,6 +10,14 @@ router.get("/run", async (req, res) => {
     console.log("[CRON] Running scheduled check...");
 
     const now = new Date();
+    console.log(`[CRON] Server Time: ${now.toISOString()}`);
+
+    // Check all pending topics regardless of date to see what's in DB
+    const allPending = await prisma.topic.findMany({ where: { status: "pending" } });
+    console.log(`[CRON] Total pending in DB: ${allPending.length}`);
+    allPending.forEach(t => {
+      console.log(`  -> Topic: ${t.topic}, PublishDate: ${t.publishDate.toISOString()}`);
+    });
 
     const topics = await prisma.topic.findMany({
       where: {
@@ -21,7 +29,7 @@ router.get("/run", async (req, res) => {
     });
 
     if (!topics.length) {
-      console.log("[CRON] No topics due for publication.");
+      console.log("[CRON] No topics due for publication (LTE now).");
       return res.json({ message: "No topics to publish" });
     }
 
