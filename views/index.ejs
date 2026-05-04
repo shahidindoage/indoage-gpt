@@ -257,7 +257,8 @@
     <form class="form" action="/add-topic" method="POST">
       <input type="text" name="topic" placeholder="Enter Topic" required />
       <input type="text" name="keywords" placeholder="Keywords" required />
-      <input type="text" name="publishDate" id="date-picker" placeholder="Select Publish Date" required />
+      <input type="text" id="date-display" placeholder="Select Publish Date" required />
+      <input type="hidden" name="publishDate" id="date-picker-hidden">
       <button class="btn btn-primary" type="submit">Add Topic</button>
     </form>
   </div>
@@ -318,11 +319,16 @@
   const loaderStatus = document.getElementById('loader-status');
 
   // Initialize Flatpickr
-  flatpickr("#date-picker", {
+  flatpickr("#date-display", {
     enableTime: true,
     dateFormat: "m/d/Y H:i",
     minDate: "today",
-    time_24hr: true
+    time_24hr: true,
+    onChange: function(selectedDates, dateStr, instance) {
+      if (selectedDates[0]) {
+        document.getElementById('date-picker-hidden').value = selectedDates[0].toISOString();
+      }
+    }
   });
 
   // Handle Add Topic Form

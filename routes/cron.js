@@ -21,70 +21,46 @@ router.get("/run", async (req, res) => {
     });
 
     if (!topics.length) {
+      console.log("[CRON] No topics due for publication.");
       return res.json({ message: "No topics to publish" });
     }
 
+    console.log(`[CRON] Found ${topics.length} topics to publish.`);
+
     for (const topic of topics) {
       try {
-        console.log(`[CRON] Publishing: ${topic.topic}`);
+        console.log(`[CRON] Processing topic: ${topic.topic}`);
 
+        // Update to processing to avoid double runs
         await prisma.topic.update({
           where: { id: topic.id },
           data: { status: "processing" },
         });
 
-        // ✅ FAST AI GENERATION
-        const [title, meta, content] = await Promise.all([
-          gemini.generateTitle(topic.topic),
-          gemini.generateMeta(topic.topic),
-          gemini.generateContent(topic.topic, topic.keywords),
-        ]);
-
-        if (!title || !content) {
-          throw new Error("AI generation failed");
-        }
-
-        // 🖼️ IMAGE GENERATION (IMPORTANT FIX)
-        let mediaId = null;
-
-        try {
-          console.log("🖼️ Generating image...");
-
-          const imageUrl = imageService.generateImage(topic.topic);
-          const imageBuffer = await imageService.downloadImage(imageUrl);
-
-          mediaId = await wordpress.uploadImage(
-            imageBuffer,
-            `${topic.topic.replace(/\s+/g, "-")}.jpg`
-          );
-
-          console.log("✅ Image uploaded:", mediaId);
-        } catch (imgErr) {
-          console.log("⚠️ Image failed:", imgErr.message);
-        }
-
-        // 📤 PUBLISH TO WORDPRESS WITH IMAGE
-        const wp = await wordpress.publishPost(
-          title,
-          content,
-          meta,
-          mediaId // ✅ featured image
+        // Publish to WordPress using pre-stored content and media
+        const wpResult = await wordpress.publishPost(
+          topic.title, 
+          topic.content, 
+          topic.metaDescription, 
+          topic.featuredMediaId
         );
 
+        // Update status to published and store the WP post ID
         await prisma.topic.update({
           where: { id: topic.id },
-          data: {
-            status: "Published",
+          data: { 
+            status: "published",
+            wpPostId: wpResult.postId
           },
         });
 
-        console.log(`[CRON] Published: ${wp.postUrl}`);
+        console.log(`[CRON] ✅ Successfully published: ${wpResult.postUrl}`);
       } catch (err) {
-        console.error(`[CRON] Failed topic ${topic.id}:`, err.message);
+        console.error(`[CRON] ❌ Failed topic ${topic.id}:`, err.message);
 
         await prisma.topic.update({
           where: { id: topic.id },
-          data: { status: "Failed" },
+          data: { status: "failed" },
         });
       }
     }
@@ -94,11 +70,8 @@ router.get("/run", async (req, res) => {
       published: topics.length,
     });
   } catch (error) {
-    console.error("[CRON] Error:", error.message);
-
-    res.status(500).json({
-      error: "Cron failed",
-    });
+    console.error("[CRON] Global Error:", error.message);
+    res.status(500).json({ error: "Cron failed" });
   }
 });
 
