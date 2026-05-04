@@ -241,9 +241,9 @@
   <div class="header">
     <h1>IndoAge GPT Dashboard</h1>
     <p>Manage topics, schedule posts, and auto-publish with AI</p>
-    <p style="margin-top: 10px; font-size: 14px; background: #e0f2fe; color: #0369a1; display: inline-block; padding: 5px 12px; border-radius: 6px;">
+    <!-- <p style="margin-top: 10px; font-size: 14px; background: #e0f2fe; color: #0369a1; display: inline-block; padding: 5px 12px; border-radius: 6px;">
       <b>Current Time:</b> <%= new Date().toISOString() %>
-    </p>
+    </p> -->
   </div>
 
   <!-- FORM CARD -->
@@ -285,11 +285,9 @@
             <td><strong><%= t.topic %></strong></td>
             <td><%= t.keywords %></td>
             <td>
-              <% 
-                const d = new Date(t.publishDate);
-                const formattedDate = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-              %>
-              <%= formattedDate %>
+              <span class="local-date" data-utc="<%= t.publishDate.toISOString() %>">
+                <%= t.publishDate.toISOString() %>
+              </span>
             </td>
             <td>
               <span class="badge <%= t.status %>">
@@ -358,6 +356,11 @@
       
       loaderOverlay.style.display = 'flex';
     });
+  // Format dates to local time
+  document.querySelectorAll('.local-date').forEach(el => {
+    const utcDate = new Date(el.getAttribute('data-utc'));
+    const formatted = `${String(utcDate.getMonth() + 1).padStart(2, '0')}/${String(utcDate.getDate()).padStart(2, '0')}/${utcDate.getFullYear()} ${String(utcDate.getHours()).padStart(2, '0')}:${String(utcDate.getMinutes()).padStart(2, '0')}`;
+    el.innerText = formatted;
   });
 </script>
 
