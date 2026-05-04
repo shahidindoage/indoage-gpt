@@ -138,10 +138,10 @@
       display: inline-block;
     }
 
-    .Pending { background: #fef3c7; color: #92400e; }
-    .Processing { background: #dbeafe; color: #1e40af; }
-    .Published { background: #dcfce7; color: #166534; }
-    .Failed { background: #fee2e2; color: #991b1b; }
+    .pending { background: #fef3c7; color: #92400e; }
+    .processing { background: #dbeafe; color: #1e40af; }
+    .published { background: #dcfce7; color: #166534; }
+    .failed { background: #fee2e2; color: #991b1b; }
 
     /* ACTION BUTTONS */
     .actions {
@@ -260,8 +260,7 @@
     <form class="form" action="/add-topic" method="POST">
       <input type="text" name="topic" placeholder="Enter Topic" required />
       <input type="text" name="keywords" placeholder="Keywords" required />
-      <input type="text" id="date-display" placeholder="Select Publish Date" required />
-      <input type="hidden" name="publishDate" id="date-picker-hidden">
+      <input type="text" name="publishDate" id="date-picker" placeholder="Select Publish Date" required />
       <button class="btn btn-primary" type="submit">Add Topic</button>
     </form>
   </div>
@@ -290,7 +289,7 @@
               </span>
             </td>
             <td>
-              <span class="badge <%= t.status %>">
+              <span class="badge <%= t.status %>" style="text-transform: capitalize;">
                 <%= t.status %>
               </span>
             </td>
@@ -320,17 +319,13 @@
   const loaderStatus = document.getElementById('loader-status');
 
   // Initialize Flatpickr
-  flatpickr("#date-display", {
+  flatpickr("#date-picker", {
     enableTime: true,
-    dateFormat: "m/d/Y H:i",
+    altInput: true,
+    altFormat: "m/d/Y H:i",
+    dateFormat: "Z",
     minDate: "today",
-    time_24hr: true,
-    onValueUpdate: function(selectedDates) {
-      if (selectedDates[0]) {
-        const timestamp = selectedDates[0].getTime();
-        document.getElementById('date-picker-hidden').value = timestamp;
-      }
-    }
+    time_24hr: true
   });
 
   // Handle Add Topic Form
@@ -356,6 +351,8 @@
       
       loaderOverlay.style.display = 'flex';
     });
+  });
+
   // Format dates to local time
   document.querySelectorAll('.local-date').forEach(el => {
     const utcDate = new Date(el.getAttribute('data-utc'));
