@@ -10,7 +10,9 @@ router.get("/run", async (req, res) => {
     console.log("[CRON] Running scheduled check...");
 
     const now = new Date();
+    const windowNow = new Date(now.getTime() + 10 * 60 * 1000); // 10 minute buffer
     console.log(`[CRON] Server Time: ${now.toISOString()}`);
+    console.log(`[CRON] Window Time (LTE): ${windowNow.toISOString()}`);
 
     // Check all pending topics regardless of date to see what's in DB
     const allPending = await prisma.topic.findMany({ where: { status: "pending" } });
@@ -23,7 +25,7 @@ router.get("/run", async (req, res) => {
       where: {
         status: "pending",
         publishDate: {
-          lte: now,
+          lte: windowNow, // Using the buffer
         },
       },
     });
