@@ -74,7 +74,7 @@ router.get("/run", async (req, res) => {
         await prisma.topic.update({
           where: { id: topic.id },
           data: {
-            status: "published",
+            status: "Published",
           },
         });
 
@@ -84,7 +84,7 @@ router.get("/run", async (req, res) => {
 
         await prisma.topic.update({
           where: { id: topic.id },
-          data: { status: "failed" },
+          data: { status: "Failed" },
         });
       }
     }

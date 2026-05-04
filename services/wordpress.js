@@ -28,7 +28,10 @@ async function uploadImage(imageBuffer, filename) {
       },
     });
 
-    return response.data.id; // ✅ media ID
+    return {
+      id: response.data.id,
+      url: response.data.source_url
+    }; // ✅ media info
   } catch (error) {
     console.error('❌ Image Upload Error:', error.response?.data || error.message);
     throw new Error('Failed to upload image');
@@ -90,8 +93,48 @@ async function checkConnection() {
   }
 }
 
+/**
+ * 🗑️ Delete Post
+ */
+async function deletePost(postId) {
+  const url = `${WORDPRESS_URL}/wp-json/wp/v2/posts/${postId}`;
+
+  try {
+    await axios.delete(url, {
+      headers: getAuthHeader(),
+    });
+    return true;
+  } catch (error) {
+    console.error('❌ WordPress Delete Error:', error.response?.data || error.message);
+    // Don't throw, just log so local delete can continue
+    return false;
+  }
+}
+
+/**
+ * 📄 Get all pages from WordPress
+ */
+async function getPages() {
+  const url = `${WORDPRESS_URL}/wp-json/wp/v2/pages?per_page=100&_fields=title,link`;
+
+  try {
+    const response = await axios.get(url, {
+      headers: getAuthHeader(),
+    });
+    return response.data.map(page => ({
+      title: page.title.rendered,
+      link: page.link
+    }));
+  } catch (error) {
+    console.error('❌ WordPress Get Pages Error:', error.message);
+    return [];
+  }
+}
+
 module.exports = {
   publishPost,
   uploadImage,
   checkConnection,
+  deletePost,
+  getPages,
 };

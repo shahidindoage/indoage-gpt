@@ -5,8 +5,8 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 // ✅ Fast + free fallback models
 const MODELS = [
-  "inclusionai/ling-2.6-flash:free",                // ✅ often available
- 
+  "inclusionai/ling-2.6-1t:free",// ✅ often available
+ "tencent/hy3-preview:free"
 ];
 
 // ✅ Delay helper
@@ -100,7 +100,11 @@ function cleanHTML(content) {
 /**
  * 📝 Generate Blog Content
  */
-async function generateContent(topic, keywords) {
+async function generateContent(topic, keywords, internalLinks = []) {
+  const linksContext = internalLinks.length > 0 
+    ? `\n\nInternal Links (Use these naturally in the content where relevant):\n${internalLinks.map(l => `- ${l.title}: ${l.link}`).join('\n')}`
+    : "";
+
   const prompt = `
 Write a blog post about "${topic}".
 
@@ -110,7 +114,7 @@ Requirements:
 - Human-friendly tone
 - Use headings (H1, H2, H3)
 - Include intro, sections, FAQs, CTA
-- Output in HTML format if possible
+- Output in HTML format if possible${linksContext}
 `;
 
   try {

@@ -11,21 +11,22 @@ const prisma = new PrismaClient();
 async function publishTopic(topic) {
   try {
     console.log(`[CRON] Publishing topic: ${topic.topic}`);
-
-    // Generate content
-    const [title, content, meta] = await Promise.all([
-      gemini.generateTitle(topic.topic),
-      gemini.generateContent(topic.topic, topic.keywords),
-      gemini.generateMeta(topic.topic)
-    ]);
-
-    // Publish to WordPress
-    const wpResult = await wordpress.publishPost(title, content, meta);
+    
+    // Publish to WordPress using pre-stored content and media
+    const wpResult = await wordpress.publishPost(
+      topic.title, 
+      topic.content, 
+      topic.metaDescription, 
+      topic.featuredMediaId
+    );
 
     // Update status
     await prisma.topic.update({
       where: { id: topic.id },
-      data: { status: 'published' }
+      data: { 
+        status: 'published',
+        wpPostId: wpResult.postId
+      }
     });
 
     console.log(`[CRON] Successfully published: ${wpResult.postUrl}`);
