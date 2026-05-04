@@ -104,7 +104,7 @@ router.post('/add-topic', async (req, res) => {
         featuredMediaId,
         articleImage: articleWPUrl,
         articleMediaId,
-        publishDate: new Date(publishDate),
+        publishDate: !isNaN(publishDate) ? new Date(parseInt(publishDate)) : new Date(publishDate),
         status: 'pending'
       }
     });

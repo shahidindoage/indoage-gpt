@@ -326,7 +326,8 @@
     time_24hr: true,
     onChange: function(selectedDates, dateStr, instance) {
       if (selectedDates[0]) {
-        document.getElementById('date-picker-hidden').value = selectedDates[0].toISOString();
+        // Send the timestamp (ms) to the server to avoid timezone confusion
+        document.getElementById('date-picker-hidden').value = selectedDates[0].getTime();
       }
     }
   });
