@@ -105,7 +105,7 @@ router.post('/add-topic', async (req, res) => {
         articleImage: articleWPUrl,
         articleMediaId,
         publishDate: new Date(publishDate),
-        status: 'Pending'
+        status: 'pending'
       }
     });
 
@@ -231,7 +231,7 @@ router.post('/publish/:id', async (req, res) => {
     // ✅ mark processing
     await prisma.topic.update({
       where: { id: topicId },
-      data: { status: 'Processing' }
+      data: { status: 'processing' }
     });
 
     console.log(`🚀 Publishing: ${topic.topic}`);
@@ -246,7 +246,7 @@ router.post('/publish/:id', async (req, res) => {
     await prisma.topic.update({
       where: { id: topicId },
       data: { 
-        status: 'Published',
+        status: 'published',
         wpPostId: wpResult.postId // 👈 STORE THIS
       }
     });
