@@ -5,8 +5,8 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 // ✅ Fast + free fallback models
 const MODELS = [
-  "inclusionai/ling-2.6-1t:free",// ✅ often available
- "tencent/hy3-preview:free"
+  "inclusionai/ring-2.6-1t:free",// ✅ often available
+ "poolside/laguna-m.1:free"
 ];
 
 // ✅ Delay helper
